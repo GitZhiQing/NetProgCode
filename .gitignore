@@ -1,0 +1,12 @@
+# editor
+.vscode/
+.idea/
+
+# venv
+.venv/
+
+# data
+*.txt
+*.json
+!headers.json
+*.jpg
