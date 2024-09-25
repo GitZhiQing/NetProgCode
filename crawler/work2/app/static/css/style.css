@@ -1,0 +1,103 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.header {
+  padding: 20px;
+  text-align: center;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  margin-bottom: 1rem;
+}
+
+.book_info_container {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.book_info_container img {
+  display: block;
+  max-height: 180px;
+  margin-right: 20px;
+}
+
+.book_details {
+  font-size: 14px;
+  max-width: 80%;
+}
+
+.book_details h2 {
+  margin-bottom: 1rem;
+}
+
+.book_chapter {
+  padding: 20px;
+}
+
+.chapter_form {
+  margin-bottom: 3rem;
+}
+
+.book_chapter form ul {
+  display: flex;
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.book_chapter form ul li {
+  margin-right: 1rem;
+}
+
+.book_chapter_list_container {
+  margin-top: 2rem;
+}
+
+.book_chapter_list_container h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.book_chapter_list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+}
+
+.book_chapter_list li {
+  flex: 1 1 100%; /* 默认情况下，每个li占满整行 */
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+@media (min-width: 576px) {
+  .book_chapter_list li {
+    flex: 1 1 calc(33.333% - 10px); /* 一排显示3个li，减去的10px是为了留出间隙 */
+    margin-right: 10px;
+  }
+
+  .book_chapter_list li:nth-child(3n) {
+    margin-right: 0;
+  }
+}
+
+.book_chapter_list a {
+  text-decoration: none;
+  color: #333;
+}
+
+.book_chapter_list a:hover {
+  text-decoration: underline;
+}

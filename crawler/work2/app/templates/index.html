@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实验二 - 小说爬虫</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>实验二 - 小说爬虫</h1>
+      <form id="book_form">
+        <label for="b_id_0">请输入书籍 ID</label>
+        <input type="number" id="b_id_0" value="11906" name="b_id_0" />
+        <button type="submit">获取小说信息</button>
+      </form>
+    </div>
+    <hr />
+    <div class="book_info_container">
+      <div class="book_info"></div>
+      <div class="book_details"></div>
+    </div>
+    <hr />
+    <div class="book_chapter">
+      <form id="chapter_form">
+        <ul>
+          <li>
+            <label for="b_id_1">请输入书籍 ID</label>
+            <input type="number" id="b_id_1" name="b_id_1" value="11906" />
+          </li>
+          <li>
+            <label for="start">请输入起始章节</label>
+            <input type="number" id="start" name="start" value="1" />
+          </li>
+          <li>
+            <label for="end">请输入结束章节</label>
+            <input type="number" id="end" name="end" value="3" />
+          </li>
+        </ul>
+        <button type="submit">获取章节列表</button>
+      </form>
+      <div class="book_chapter_list_container">
+        <h2>章节列表</h2>
+        <ul class="book_chapter_list"></ul>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  </body>
+</html>
