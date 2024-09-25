@@ -10,3 +10,6 @@
 *.json
 !headers.json
 *.jpg
+
+# pycache
+__pycache__/
