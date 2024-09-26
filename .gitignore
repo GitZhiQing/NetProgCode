@@ -12,5 +12,5 @@
 !headers.json
 *.jpg
 
-# pycache
+# python
 __pycache__/
