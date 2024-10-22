@@ -9,9 +9,14 @@ idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.4
 lxml==5.3.0
+markdown-it-py==3.0.0
 MarkupSafe==2.1.5
+mdurl==0.1.2
+Pygments==2.18.0
 requests==2.32.3
+rich==13.9.2
 soupsieve==2.6
 tqdm==4.66.5
 urllib3==2.2.3
+watchdog==5.0.3
 Werkzeug==3.0.4
