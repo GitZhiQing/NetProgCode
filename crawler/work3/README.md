@@ -5,5 +5,5 @@
 ## 运行
 
 ```bash
-python app.py
+flask run
 ```
