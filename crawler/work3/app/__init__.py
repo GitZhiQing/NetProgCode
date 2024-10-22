@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request
 from app import crawler, search
-import concurrent.futures
+from rich.logging import RichHandler
+import logging
+from threading import Thread
 
 app = Flask(__name__)
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+# 配置日志处理器
+logging.basicConfig(level="INFO", handlers=[RichHandler()])
+logger = logging.getLogger("flask.app")
 
 
 @app.route("/")
@@ -21,7 +25,7 @@ def index():
 def crawler_index():
     target = request.args.get("target", "")
     if target:
-        # 提交任务到线程池
-        executor.submit(crawler.main, target)
+        t = Thread(target=crawler.main, args=(target,))
+        t.start()
         return render_template("crawler.html", target=target)
     return render_template("crawler.html")

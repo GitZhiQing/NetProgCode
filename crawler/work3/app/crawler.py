@@ -1,14 +1,19 @@
 import json
+import os
 import re
 import time
 import urllib3
+import warnings
 
 import requests
 from bs4 import BeautifulSoup
 from rich.progress import Progress
+from urllib3.exceptions import InsecureRequestWarning
+from bs4 import XMLParsedAsHTMLWarning
 
-# 禁用 SSL 警告
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# 过滤警告
+warnings.filterwarnings("ignore", category=InsecureRequestWarning)
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
 def get_soup(url, proxy=False):
@@ -18,7 +23,9 @@ def get_soup(url, proxy=False):
     """
     try:
         proxies = {"http": "http://127.0.0.1:7890", "https": "http://127.0.0.1:7890"}
-        with open("./data/headers.json", "r", encoding="utf-8") as f:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        headers_file_path = os.path.join(current_dir, "data", "headers.json")
+        with open(headers_file_path, "r", encoding="utf-8") as f:
             headers = json.load(f)
         response = requests.get(
             url, headers=headers, proxies=proxies if proxy else None, verify=False
@@ -91,6 +98,7 @@ def get_url_suburl_data(url, depth, max_depth, progress=None, task_id=None):
 
 
 def main(url="https://sqlmap.highlight.ink/"):
+    print(f"爬取目标: {url}")
     max_depth = 1
     suburls = get_url_suburl(url)
     if suburls is None:
@@ -108,7 +116,11 @@ def main(url="https://sqlmap.highlight.ink/"):
             "suburls": get_url_suburl_data(url, 0, max_depth, progress, task_id),
         }
 
-    with open("./data/data.json", "w", encoding="utf-8") as f:
+    # 获取当前脚本文件的目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 构建 data.json 的绝对路径
+    data_file_path = os.path.join(current_dir, "data", "data.json")
+    with open(data_file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
