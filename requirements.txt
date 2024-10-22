@@ -16,7 +16,6 @@ Pygments==2.18.0
 requests==2.32.3
 rich==13.9.2
 soupsieve==2.6
-tqdm==4.66.5
 urllib3==2.2.3
 watchdog==5.0.3
 Werkzeug==3.0.4
