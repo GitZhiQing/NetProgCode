@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}<title>搜索 | 网络编程实验三</title>{% endblock %}
+{% block content %}
+<a href="/crawler"
+   class="switch">爬取</a>
+<!--搜索表单-->
+<form method="get">
+  <input type="text"
+         name="keyword"
+         placeholder="请输入搜索关键词" />
+  <input type="submit"
+         value="搜索" />
+</form>
+<!--展示链接列表-->
+{% if keyword %}
+{% if not urls %}
+<p class="info">暂无数据</p>
+{% else %}
+<p class="info">
+  搜索关键词：<span class="keyword">{{ keyword }}</span>，共找到
+  <span class="num">{{ urls|length }}</span> 条记录
+</p>
+<ul>
+  {% for url in urls %}
+  <li><a href="{{ url.url }}"
+       target="_blank">{{ url.title }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+
+<!--顶部-->
+<a href="#"
+   id="top">&uarr; 返回顶部</a>
+{% endblock %}

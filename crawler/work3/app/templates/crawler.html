@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}<title>爬取 | 网络编程实验三</title>{% endblock %}
+{% block content %}
+<a href="/"
+   class="switch">搜索</a>
+<!--搜索表单-->
+<form method="get">
+    <input type="text"
+           name="target"
+           placeholder="请输入爬取 URL" />
+    <input type="submit"
+           value="爬取" />
+</form>
+{% if target %}
+<p class="info">爬取链接：<span class="target">{{ target }}</span></> 已在后台进行
+    {% endif %}
+    {% endblock %}
