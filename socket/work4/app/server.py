@@ -57,11 +57,15 @@ def make_request(conn):
     raw_request = raw_request.decode("utf-8")
     request = {"line": {}, "headers": {}}
     request_lines = raw_request.split(CRLF)
-    (
-        request["line"]["method"],
-        request["line"]["uri"],
-        request["line"]["version"],
-    ) = request_lines[0].split(" ")
+
+    # 检查请求行是否包含三个部分
+    request_line_parts = request_lines[0].split(" ")
+    if len(request_line_parts) != 3:
+        raise ValueError("Invalid HTTP request line")
+
+    request["line"]["method"], request["line"]["uri"], request["line"]["version"] = (
+        request_line_parts
+    )
     for line in request_lines[1:]:
         if line == "":
             break
@@ -87,40 +91,75 @@ def make_response(status, headers, body):
 
 
 def handle_client(conn, addr):
-    with conn:
-        status = 200
+    status = 200
+    request = None  # 初始化 request 变量
+    try:
         request = make_request(conn)
         uri = request["line"]["uri"]
         if uri == "/":
-            uri = "/index.html"
-        file_path = os.path.join(WEB_ROOT, uri[1:])
-        if os.path.exists(file_path):
-            with open(file_path, "rb") as f:
-                file = f.read()
-                content_type = get_content_type(file_path)
-                headers = {
-                    "Server": SERVER_NAME,
-                    "Date": get_gmt_date(),
-                    "Content-Type": content_type,
-                    "Content-Length": len(file),
-                    "Connection": "close",
-                }
-                response = make_response(status, headers, file)
-        else:
+            # 生成根目录的 HTML 列表
+            files = os.listdir(WEB_ROOT)
+            file_list_html = f"<html><body><h1>Index of {uri}</h1><ul>"
+            for file in files:
+                file_list_html += f'<li><a href="/{file}">{file}</a></li>'
+            file_list_html += "</ul></body></html>"
+            file = file_list_html.encode("utf-8")
+            content_type = "text/html"
             headers = {
                 "Server": SERVER_NAME,
                 "Date": get_gmt_date(),
+                "Content-Type": content_type,
+                "Content-Length": len(file),
                 "Connection": "close",
             }
-            status = 404
-            response = make_response(status, headers, "404 Not Found")
+            response = make_response(status, headers, file)
+        else:
+            file_path = os.path.join(WEB_ROOT, uri[1:])
+            if os.path.exists(file_path):
+                with open(file_path, "rb") as f:
+                    file = f.read()
+                    content_type = get_content_type(file_path)
+                    headers = {
+                        "Server": SERVER_NAME,
+                        "Date": get_gmt_date(),
+                        "Content-Type": content_type,
+                        "Content-Length": len(file),
+                        "Connection": "close",
+                    }
+                    response = make_response(status, headers, file)
+            else:
+                status = 404
+                headers = {
+                    "Server": SERVER_NAME,
+                    "Date": get_gmt_date(),
+                    "Connection": "close",
+                }
+                response = make_response(404, headers, "404 Not Found")
+    except Exception as e:
+        status = 500
+        # 捕获异常并返回 500 状态码
+        headers = {
+            "Server": SERVER_NAME,
+            "Date": get_gmt_date(),
+            "Connection": "close",
+        }
+        response = make_response(status, headers, "500 Internal Server Error")
+        logging.error(f"服务器错误: {e}")
 
-        # 打印 HTTP 请求日志
+    # 打印 HTTP 请求日志
+    if request:
         logging.info(
             f'{addr[0]}:{addr[1]} - "{request["line"]["method"]} {request["line"]["uri"]} {request["line"]["version"]}" {status} - "{request["headers"].get("user-agent", "")}"'
         )
+    else:
+        logging.info(f"{addr[0]}:{addr[1]} - 请求解析失败，状态码: {status}")
 
+    try:
         conn.sendall(response)
+    except OSError as e:
+        logging.error(f"发送响应时出错: {e}")
+    finally:
+        conn.close()
 
 
 def main():
