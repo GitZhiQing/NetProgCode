@@ -1,35 +1,9 @@
 import socket
-import mimetypes
 import os
-import datetime
 import threading
-import logging
-
-# 配置日志
-logging.basicConfig(level=logging.INFO, format="[%(asctime)s] - %(message)s")
-
-HOST = "127.0.0.1"
-PORT = 9999
-WEB_ROOT = os.path.join(os.path.dirname(__file__), "html")
-CRLF = "\r\n"
-SERVER_NAME = "Seeker dev"
 
 
-def get_content_type(file_path):
-    """
-    根据文件路径获取文件的 MIME 类型
-    """
-    content_type, _ = mimetypes.guess_type(file_path)
-    return content_type or "application/octet-stream"
-
-
-def get_gmt_date():
-    """
-    获取当前时间的 GMT 格式
-    """
-    return datetime.datetime.now(datetime.timezone.utc).strftime(
-        "%a, %d %b %Y %H:%M:%S GMT"
-    )
+from app import Config, logging, indexes, deps
 
 
 def get_status_line(status):
@@ -49,6 +23,7 @@ def make_request(conn):
     解析请求报文
     """
     raw_request = b""
+    # 借助缓冲区，循环接收数据
     while True:
         data = conn.recv(1024)
         raw_request += data
@@ -56,13 +31,9 @@ def make_request(conn):
             break
     raw_request = raw_request.decode("utf-8")
     request = {"line": {}, "headers": {}}
-    request_lines = raw_request.split(CRLF)
+    request_lines = raw_request.split("\r\n")
 
-    # 检查请求行是否包含三个部分
     request_line_parts = request_lines[0].split(" ")
-    if len(request_line_parts) != 3:
-        raise ValueError("Invalid HTTP request line")
-
     request["line"]["method"], request["line"]["uri"], request["line"]["version"] = (
         request_line_parts
     )
@@ -80,8 +51,8 @@ def make_response(status, headers, body):
     """
     response = [get_status_line(status)]
     response.extend([f"{k}: {v}" for k, v in headers.items()])
-    response.append(CRLF)
-    response = CRLF.join(response)  # 将列表中的每个元素用 CRLF 连接起来
+    response.append("\r\n")
+    response = "\r\n".join(response)
 
     # 回复体均为字节类型
     if isinstance(body, str):
@@ -93,35 +64,59 @@ def make_response(status, headers, body):
 def handle_client(conn, addr):
     status = 200
     request = None  # 初始化 request 变量
+    response = b""  # 初始化 response 变量
     try:
         request = make_request(conn)
         uri = request["line"]["uri"]
         if uri == "/":
-            # 生成根目录的 HTML 列表
-            files = os.listdir(WEB_ROOT)
-            file_list_html = f"<html><body><h1>Index of {uri}</h1><ul>"
-            for file in files:
-                file_list_html += f'<li><a href="/{file}">{file}</a></li>'
-            file_list_html += "</ul></body></html>"
-            file = file_list_html.encode("utf-8")
+            # 判断 Config.DEFAULT_INDEX 是否存在，不存在则列目录
+            if not os.path.exists(os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)):
+                dir_path = Config.WEB_ROOT
+                file = indexes.get_index_html(dir_path).encode("utf-8")
+                content_type = "text/html"
+                headers = {
+                    "Server": Config.SERVER_NAME,
+                    "Date": deps.get_gmt_date(),
+                    "Content-Type": content_type,
+                    "Content-Length": len(file),
+                    "Connection": "close",
+                }
+                response = make_response(status, headers, file)
+            else:
+                file_path = os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)
+                with open(file_path, "rb") as f:
+                    file = f.read()
+                    content_type = deps.get_content_type(file_path)
+                    headers = {
+                        "Server": Config.SERVER_NAME,
+                        "Date": deps.get_gmt_date(),
+                        "Content-Type": content_type,
+                        "Content-Length": len(file),
+                        "Connection": "close",
+                    }
+                    response = make_response(status, headers, file)
+        # 如果路径以 “/” 结尾且不等于 “/” 则列目录
+        elif uri.endswith("/") and uri != "/":
+            dir_path = os.path.join(Config.WEB_ROOT, uri[1:])
+            file = indexes.get_index_html(dir_path).encode("utf-8")
             content_type = "text/html"
             headers = {
-                "Server": SERVER_NAME,
-                "Date": get_gmt_date(),
+                "Server": Config.SERVER_NAME,
+                "Date": deps.get_gmt_date(),
                 "Content-Type": content_type,
                 "Content-Length": len(file),
                 "Connection": "close",
             }
             response = make_response(status, headers, file)
         else:
-            file_path = os.path.join(WEB_ROOT, uri[1:])
+            file_path = os.path.join(Config.WEB_ROOT, uri[1:])
             if os.path.exists(file_path):
                 with open(file_path, "rb") as f:
                     file = f.read()
-                    content_type = get_content_type(file_path)
+                    content_type = deps.get_content_type(file_path)
                     headers = {
-                        "Server": SERVER_NAME,
-                        "Date": get_gmt_date(),
+                        "Server": Config.SERVER_NAME,
+                        "Date": deps.get_gmt_date(),
                         "Content-Type": content_type,
                         "Content-Length": len(file),
                         "Connection": "close",
@@ -130,8 +125,8 @@ def handle_client(conn, addr):
             else:
                 status = 404
                 headers = {
-                    "Server": SERVER_NAME,
-                    "Date": get_gmt_date(),
+                    "Server": Config.SERVER_NAME,
+                    "Date": deps.get_gmt_date(),
                     "Connection": "close",
                 }
                 response = make_response(404, headers, "404 Not Found")
@@ -139,8 +134,8 @@ def handle_client(conn, addr):
         status = 500
         # 捕获异常并返回 500 状态码
         headers = {
-            "Server": SERVER_NAME,
-            "Date": get_gmt_date(),
+            "Server": Config.SERVER_NAME,
+            "Date": deps.get_gmt_date(),
             "Connection": "close",
         }
         response = make_response(status, headers, "500 Internal Server Error")
@@ -162,17 +157,13 @@ def handle_client(conn, addr):
         conn.close()
 
 
-def main():
+def start():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((HOST, PORT))
+        s.bind((Config.HOST, Config.PORT))
         s.listen()
         print(
-            f"[*] 服务已启动: http://{HOST}:{PORT}\n[*] 站点根目录: {WEB_ROOT}\n[*] 服务器名称: {SERVER_NAME}"
+            f"[*] 服务已启动: http://{Config.HOST}:{Config.PORT}\n[*] 站点根目录: {Config.WEB_ROOT}\n[*] 服务器名称: {Config.SERVER_NAME}"
         )
         while True:
             conn, addr = s.accept()
             threading.Thread(target=handle_client, args=(conn, addr)).start()
-
-
-if __name__ == "__main__":
-    main()
