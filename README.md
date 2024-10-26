@@ -5,10 +5,8 @@
 - crawler：爬虫部分
 - socket：socket 部分
 
-## 环境
+## 依赖
 
 ```bash
 pip install -r requirements.txt
 ```
-
-> 建议在虚拟环境中运行代码
