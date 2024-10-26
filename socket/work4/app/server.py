@@ -2,13 +2,12 @@ import socket
 import os
 import threading
 
-
 from app import Config, logging, indexes, deps
 
 
 def get_status_line(status):
     """
-    根据状态码获取状态行
+    根据状态码返回状态行
     """
     status_code = {
         200: "OK",
@@ -20,10 +19,9 @@ def get_status_line(status):
 
 def make_request(conn):
     """
-    解析请求报文
+    将 socket 连接接收的数据进行解析为 HTTP 请求体字典
     """
     raw_request = b""
-    # 借助缓冲区，循环接收数据
     while True:
         data = conn.recv(1024)
         raw_request += data
@@ -47,92 +45,105 @@ def make_request(conn):
 
 def make_response(status, headers, body):
     """
-    构造响应报文
+    根据状态码、响应头和响应体生成 HTTP 响应
     """
     response = [get_status_line(status)]
     response.extend([f"{k}: {v}" for k, v in headers.items()])
     response.append("\r\n")
     response = "\r\n".join(response)
 
-    # 回复体均为字节类型
     if isinstance(body, str):
         body = body.encode("utf-8")
 
     return response.encode("utf-8") + body
 
 
+def handle_root_request():
+    """
+    处理根目录请求
+    """
+    # 如果根目录下没有默认索引文件，则显示目录列表
+    if not os.path.exists(os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)):
+        dir_path = Config.WEB_ROOT
+        file = indexes.get_index_html(dir_path).encode("utf-8")
+        content_type = "text/html"
+    # 否则返回默认索引文件
+    else:
+        file_path = os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)
+        with open(file_path, "rb") as f:
+            file = f.read()
+            content_type = deps.get_content_type(file_path)
+    headers = {
+        "Server": Config.SERVER_NAME,
+        "Date": deps.get_gmt_date(),
+        "Content-Type": content_type,
+        "Content-Length": len(file),
+        "Connection": "close",
+    }
+    return make_response(200, headers, file)
+
+
+def handle_directory_request(uri):
+    """
+    处理目录请求
+    """
+    dir_path = os.path.join(Config.WEB_ROOT, uri[1:])
+    file = indexes.get_index_html(dir_path).encode("utf-8")
+    content_type = "text/html"
+    headers = {
+        "Server": Config.SERVER_NAME,
+        "Date": deps.get_gmt_date(),
+        "Content-Type": content_type,
+        "Content-Length": len(file),
+        "Connection": "close",
+    }
+    return make_response(200, headers, file)
+
+
+def handle_file_request(uri):
+    """
+    处理文件请求
+    """
+    file_path = os.path.join(Config.WEB_ROOT, uri[1:])
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            file = f.read()
+            content_type = deps.get_content_type(file_path)
+        headers = {
+            "Server": Config.SERVER_NAME,
+            "Date": deps.get_gmt_date(),
+            "Content-Type": content_type,
+            "Content-Length": len(file),
+            "Connection": "close",
+        }
+        return make_response(200, headers, file)
+    else:
+        headers = {
+            "Server": Config.SERVER_NAME,
+            "Date": deps.get_gmt_date(),
+            "Connection": "close",
+        }
+        return make_response(404, headers, "404 Not Found")
+
+
 def handle_client(conn, addr):
+    """
+    处理 socket 客户端请求
+    """
     status = 200
-    request = None  # 初始化 request 变量
-    response = b""  # 初始化 response 变量
+    request = None
+    response = b""
     try:
         request = make_request(conn)
         uri = request["line"]["uri"]
         if uri == "/":
-            # 判断 Config.DEFAULT_INDEX 是否存在，不存在则列目录
-            if not os.path.exists(os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)):
-                dir_path = Config.WEB_ROOT
-                file = indexes.get_index_html(dir_path).encode("utf-8")
-                content_type = "text/html"
-                headers = {
-                    "Server": Config.SERVER_NAME,
-                    "Date": deps.get_gmt_date(),
-                    "Content-Type": content_type,
-                    "Content-Length": len(file),
-                    "Connection": "close",
-                }
-                response = make_response(status, headers, file)
-            else:
-                file_path = os.path.join(Config.WEB_ROOT, Config.DEFAULT_INDEX)
-                with open(file_path, "rb") as f:
-                    file = f.read()
-                    content_type = deps.get_content_type(file_path)
-                    headers = {
-                        "Server": Config.SERVER_NAME,
-                        "Date": deps.get_gmt_date(),
-                        "Content-Type": content_type,
-                        "Content-Length": len(file),
-                        "Connection": "close",
-                    }
-                    response = make_response(status, headers, file)
-        # 如果路径以 “/” 结尾且不等于 “/” 则列目录
+            response = handle_root_request()
         elif uri.endswith("/") and uri != "/":
-            dir_path = os.path.join(Config.WEB_ROOT, uri[1:])
-            file = indexes.get_index_html(dir_path).encode("utf-8")
-            content_type = "text/html"
-            headers = {
-                "Server": Config.SERVER_NAME,
-                "Date": deps.get_gmt_date(),
-                "Content-Type": content_type,
-                "Content-Length": len(file),
-                "Connection": "close",
-            }
-            response = make_response(status, headers, file)
+            response = handle_directory_request(uri)
         else:
-            file_path = os.path.join(Config.WEB_ROOT, uri[1:])
-            if os.path.exists(file_path):
-                with open(file_path, "rb") as f:
-                    file = f.read()
-                    content_type = deps.get_content_type(file_path)
-                    headers = {
-                        "Server": Config.SERVER_NAME,
-                        "Date": deps.get_gmt_date(),
-                        "Content-Type": content_type,
-                        "Content-Length": len(file),
-                        "Connection": "close",
-                    }
-                    response = make_response(status, headers, file)
-            else:
-                status = 404
-                headers = {
-                    "Server": Config.SERVER_NAME,
-                    "Date": deps.get_gmt_date(),
-                    "Connection": "close",
-                }
-                response = make_response(404, headers, "404 Not Found")
+            response = handle_file_request(uri)
     except Exception as e:
         status = 500
-        # 捕获异常并返回 500 状态码
         headers = {
             "Server": Config.SERVER_NAME,
             "Date": deps.get_gmt_date(),
@@ -141,7 +152,6 @@ def handle_client(conn, addr):
         response = make_response(status, headers, "500 Internal Server Error")
         logging.error(f"服务器错误: {e}")
 
-    # 打印 HTTP 请求日志
     if request:
         logging.info(
             f'{addr[0]}:{addr[1]} - "{request["line"]["method"]} {request["line"]["uri"]} {request["line"]["version"]}" {status} - "{request["headers"].get("user-agent", "")}"'
@@ -158,6 +168,12 @@ def handle_client(conn, addr):
 
 
 def start():
+    # 检查 WEB_ROOT 是否存在，不存在则创建
+    if not os.path.exists(Config.WEB_ROOT):
+        logging.info(f"[!] 站点根目录不存在: {Config.WEB_ROOT}")
+        os.makedirs(Config.WEB_ROOT)
+        logging.info(f"[+] 创建站点根目录: {Config.WEB_ROOT}")
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((Config.HOST, Config.PORT))
         s.listen()
