@@ -9,5 +9,5 @@
 
 ```bash
 cd work4 && mkdir html # 创建网站根目录文件夹
-python run.py
+python -m app
 ```
