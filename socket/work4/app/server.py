@@ -159,6 +159,27 @@ def handle_client(conn, addr):
     else:
         logging.info(f"{addr[0]}:{addr[1]} - 请求解析失败，状态码: {status}")
 
+    # 文件写更详细的日志
+    with open("access.log", "a", encoding="utf-8") as f:
+        if request:
+            f.write(
+                f'{addr[0]}:{addr[1]} - "{request["line"]["method"]} {request["line"]["uri"]} {request["line"]["version"]}" {status} - "{request["headers"].get("user-agent", "")}"\n'
+            )
+            f.write("请求头信息:\n")
+            for key, value in request["headers"].items():
+                f.write(f"{key}: {value}\n")
+            f.write("\n")
+        else:
+            f.write(f"{addr[0]}:{addr[1]} - 请求解析失败，状态码: {status}\n")
+
+        f.write("响应头信息:\n")
+        response_headers = (
+            response.split(b"\r\n\r\n")[0].decode("utf-8").split("\r\n")[1:]
+        )
+        for header in response_headers:
+            f.write(f"{header}\n")
+        f.write("\n")
+
     try:
         conn.sendall(response)
     except OSError as e:
