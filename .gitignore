@@ -11,6 +11,9 @@
 *.json
 !headers.json
 *.jpg
+*.log
 
 # python
 __pycache__/
+
+tmp/
