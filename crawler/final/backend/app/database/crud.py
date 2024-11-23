@@ -27,7 +27,7 @@ def get_unprocessed_odocs(db: Session):
     """
     获取未预处理的文档
     """
-    return db.query(models.ODoc).filter(models.ODoc.is_preprocessed == 0).all()
+    return db.query(models.ODoc).filter(models.ODoc.is_preprocessed == 0).all()  # type: ignore
 
 
 def get_all_pdocs(db: Session):

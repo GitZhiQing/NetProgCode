@@ -1,4 +1,5 @@
-import joblib
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,8 +13,11 @@ app = FastAPI(
 
 from app import init_app  # noqa
 
+logging.info("应用初始化中...")
 init_app.init_db()
 init_app.init_dir()
+init_app.init_search_index()
+logging.info("应用初始化完成.")
 
 # CORS
 app.add_middleware(
@@ -28,13 +32,3 @@ app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 from app.api import api_router  # noqa
 
 app.include_router(api_router, prefix=settings.API_STR)
-
-from app.search import preprocess  # noqa
-
-preprocess.tokenize_all_odocs()
-
-tfidf_matrix, vectorizer = preprocess.build_inverted_index()
-
-# 存储 tfidf_matrix 和 vectorizer
-joblib.dump(tfidf_matrix, f"{settings.DATA_DIR}/pkls/tfidf_matrix.pkl")
-joblib.dump(vectorizer, f"{settings.DATA_DIR}/pkls/vectorizer.pkl")
