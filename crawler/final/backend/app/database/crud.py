@@ -4,6 +4,9 @@ from app.database import models
 
 
 def create_odoc(db: Session, url: str, title: str, first_100_words: str) -> models.ODoc:
+    """
+    创建原始文档
+    """
     odoc = models.ODoc(url=url, title=title, first_100_words=first_100_words)
     db.add(odoc)
     db.commit()
@@ -12,6 +15,9 @@ def create_odoc(db: Session, url: str, title: str, first_100_words: str) -> mode
 
 
 def create_pdoc(db: Session, odid: int) -> models.PDoc:
+    """
+    创建预处理文档
+    """
     pdoc = models.PDoc(odid=odid)
     db.add(pdoc)
     db.commit()
@@ -20,15 +26,21 @@ def create_pdoc(db: Session, odid: int) -> models.PDoc:
 
 
 def get_all_odocs(db: Session):
+    """
+    获取所有原始文档
+    """
     return db.query(models.ODoc).all()
 
 
 def get_unprocessed_odocs(db: Session):
     """
-    获取未预处理的文档
+    获取未预处理的原始文档
     """
     return db.query(models.ODoc).filter(models.ODoc.is_preprocessed == 0).all()  # type: ignore
 
 
 def get_all_pdocs(db: Session):
+    """
+    获取所有预处理文档
+    """
     return db.query(models.PDoc).all()

@@ -16,11 +16,10 @@ def get_database_url():
 
 class Settings(BaseSettings):
     APP_ENV: str = "dev"
-    APP_NAME: str = "Search Engine API"
+    APP_NAME: str = "Seeker Engine API"
     API_STR: str = "/api"
     SECRET_KEY: str = "seek2geek"
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 7  # 7 天
-
     DATABASE_URL: str = get_database_url()
     STATIC_DIR: str = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "static"
@@ -28,6 +27,7 @@ class Settings(BaseSettings):
     DATA_DIR: str = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"
     )
+    INVERTED_INDEX_PATH: str = os.path.join(DATA_DIR, "inverted_index.json")
     JOBLIB_DIR: str = os.path.join(DATA_DIR, "joblibs")
     TFIDF_MATRIX_PATH: str = os.path.join(JOBLIB_DIR, "tfidf_matrix.joblib")
     VECTORIZER_PATH: str = os.path.join(JOBLIB_DIR, "vectorizer.joblib")

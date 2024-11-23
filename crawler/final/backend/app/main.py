@@ -27,6 +27,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 
 from app.api import api_router  # noqa
