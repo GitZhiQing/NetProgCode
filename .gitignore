@@ -16,4 +16,6 @@
 # python
 __pycache__/
 
+# dev
 tmp/
+dev-docs
