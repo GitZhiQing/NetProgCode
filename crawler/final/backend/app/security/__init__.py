@@ -27,7 +27,7 @@ def get_password_hash(password: str) -> str:
 
 
 def authenticate_user(
-        db: Session, username: str, password: str
+    db: Session, username: str, password: str
 ) -> schemas.users.UserInDB | bool:
     """
     通过用户名和密码验证用户

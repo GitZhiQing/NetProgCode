@@ -83,7 +83,7 @@ def tokenize_all_odocs():
             odoc_content = utils.read_odoc_content(odoc)
             pdoc_content = tokenize_text(odoc_content)
             with open(
-                    f"{settings.PDOC_DIR}/{pdoc.pdid}.txt", "w", encoding="utf-8"
+                f"{settings.PDOC_DIR}/{pdoc.pdid}.txt", "w", encoding="utf-8"
             ) as f:
                 f.write(pdoc_content)
             odoc.is_preprocessed = 1
