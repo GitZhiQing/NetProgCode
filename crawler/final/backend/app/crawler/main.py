@@ -3,6 +3,7 @@ from typing import Optional
 
 import requests
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import TimeoutError
 
 from app import deps, settings
 from app.crawler import get_soup, target_list, APP_UA
@@ -53,9 +54,7 @@ def crawl_one_id(article_id: int, target_id: int):
         file.write(resp.text)
 
 
-def crawl_range_id(
-    start_id: Optional[int] = None, end_id: Optional[int] = None, target_id: int = 0
-):
+def crawl_range_id(start_id: int, end_id: int, target_id: int):
     """
     爬取指定范围 id 的文章
     """
@@ -67,7 +66,10 @@ def crawl_range_id(
     if start_id is None:
         start_id = end_id - 100
     for article_id in range(start_id, end_id + 1):
-        crawl_one_id(article_id, target_id)
+        try:
+            crawl_one_id(article_id, target_id)
+        except TimeoutError as e:
+            logging.error(f"数据库连接超时: {e}")
     logging.info("Done.")
 
 
