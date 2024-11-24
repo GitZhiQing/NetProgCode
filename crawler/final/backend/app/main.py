@@ -14,8 +14,8 @@ app = FastAPI(
 from app import init_app  # noqa
 
 logging.info("应用初始化中...")
-init_app.init_db()
 init_app.init_dir()
+init_app.init_db()
 init_app.init_search_index()
 logging.info("应用初始化完成.")
 

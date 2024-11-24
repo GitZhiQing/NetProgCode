@@ -13,7 +13,8 @@ class ODoc(Base):
     __tablename__ = "odoc"
 
     odid = Column(Integer, primary_key=True, autoincrement=True)
-    url = Column(String, nullable=False)
+    url = Column(String, nullable=False, unique=True, index=True)
+    site = Column(String, nullable=False)
     title = Column(String, nullable=False)
     first_100_words = Column(String, nullable=False)
     crawl_time = Column(String, default=str(int(time.time())))

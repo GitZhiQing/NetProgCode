@@ -3,11 +3,13 @@ from sqlalchemy.orm import Session
 from app.database import models
 
 
-def create_odoc(db: Session, url: str, title: str, first_100_words: str) -> models.ODoc:
+def create_odoc(
+    db: Session, url: str, title: str, site: str, first_100_words: str
+) -> models.ODoc:
     """
     创建原始文档
     """
-    odoc = models.ODoc(url=url, title=title, first_100_words=first_100_words)
+    odoc = models.ODoc(url=url, title=title, site=site, first_100_words=first_100_words)
     db.add(odoc)
     db.commit()
     db.refresh(odoc)
@@ -30,6 +32,20 @@ def get_all_odocs(db: Session):
     获取所有原始文档
     """
     return db.query(models.ODoc).all()
+
+
+def get_odoc_by_odid(db: Session, odid: int):
+    """
+    根据 odid 获取原始文档
+    """
+    return db.query(models.ODoc).filter(models.ODoc.odid == odid).first()  # type: ignore
+
+
+def get_odoc_by_url(db: Session, url: str):
+    """
+    根据 url 获取原始文档
+    """
+    return db.query(models.ODoc).filter(models.ODoc.url == url).first()  # type: ignore
 
 
 def get_unprocessed_odocs(db: Session):
