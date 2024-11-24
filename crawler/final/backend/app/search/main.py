@@ -1,5 +1,4 @@
 import json
-import os
 
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
@@ -9,33 +8,24 @@ from app import schemas, settings
 from app.database import models
 from app.search import preprocess
 
-# 加载前检查 .joblib 文件是否存在
-tfidf_matrix_path = settings.TFIDF_MATRIX_PATH
-vectorizer_path = settings.VECTORIZER_PATH
 
-if os.path.exists(tfidf_matrix_path) and os.path.exists(vectorizer_path):
-    tfidf_matrix = joblib.load(tfidf_matrix_path)
-    vectorizer = joblib.load(vectorizer_path)
-else:
-    raise FileNotFoundError("未找到 TF-IDF 矩阵和 vectorizer，请先运行进行数据预处理")
-
-
-def load_inverted_index():
+def load_data():
     """
-    加载倒排索引
+    加载 inverted_index, tfidf_matrix, vectorizer 并同时返回
     """
-    with open(settings.INVERTED_INDEX_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-# 加载倒排索引
-inverted_index = load_inverted_index()
+    with open(settings.INVERTED_INDEX_PATH, "rb") as file:
+        inverted_index = json.load(file)
+    tfidf_matrix = joblib.load(settings.TFIDF_MATRIX_PATH)
+    vectorizer = joblib.load(settings.VECTORIZER_PATH)
+    return inverted_index, tfidf_matrix, vectorizer
 
 
 def search(query: str, db: Session) -> dict:
     """
     根据查询词搜索相关文件
     """
+    inverted_index, tfidf_matrix, vectorizer = load_data()
+
     # 预处理查询词并转换为 TF-IDF 向量
     query_tokens = preprocess.tokenize_text(query).split()
     query_vec = vectorizer.transform([preprocess.tokenize_text(query)])

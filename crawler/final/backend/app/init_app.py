@@ -1,7 +1,6 @@
 import logging
 import os
 
-import joblib
 from sqlalchemy.orm import Session
 
 from app import settings, deps, utils
@@ -26,6 +25,8 @@ def init_dir():
     utils.recreate_dir(settings.ODOC_DIR)
     utils.recreate_dir(settings.PDOC_DIR)
     utils.recreate_dir(settings.JOBLIB_DIR)
+    if os.path.exists(settings.INVERTED_INDEX_PATH):
+        os.remove(settings.INVERTED_INDEX_PATH)
     logging.info("Done.")
 
 
@@ -37,7 +38,7 @@ def init_search_index():
     if not odocs:
         logging.info(f"未找到任何原始文档...")
         default_crawl_target_id = 0
-        default_crawl_count = 5
+        default_crawl_count = 10
         from app import crawler
 
         crawler.crawl_range_count(default_crawl_count, default_crawl_target_id)
@@ -48,9 +49,5 @@ def init_search_index():
     if unprocessed_odocs:
         logging.info("预处理原始文档...")
         preprocess.preprocess_all_odocs()
-        tfidf_matrix, vectorizer = preprocess.build_tfidf_matrix()
-        # 将 tfidf_matrix 和 vectorizer 保存为 .joblib 文件
-        joblib.dump(tfidf_matrix, settings.TFIDF_MATRIX_PATH)
-        joblib.dump(vectorizer, settings.VECTORIZER_PATH)
         logging.info("Done.")
     logging.info("Done.")

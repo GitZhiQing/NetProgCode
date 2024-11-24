@@ -9,7 +9,14 @@
            color="primary"
            class="me-4">搜索</v-btn>
     <v-divider class="my-4"></v-divider>
-    <v-row>
+    <div v-if="query">
+      <p class="mb-4 result-count">
+        共找到
+        <span class="result-number">{{ results.length }}</span>
+        条结果
+      </p>
+    </div>
+    <v-row v-if="results.length > 0">
       <v-col v-for="result in results"
              :key="result.odid"
              cols="12">
@@ -47,6 +54,10 @@ export default {
   },
   methods: {
     async search() {
+      if (!this.query) {
+        this.results = [];
+        return;
+      }
       try {
         const response = await apiClient.get(`/api/docs/`, {
           params: { query: this.query },
@@ -73,5 +84,14 @@ export default {
 .similarity {
   font-size: 0.75rem;
   color: gray;
+}
+
+.result-count {
+  color: #1867c0;
+}
+
+.result-number {
+  color: #ff5722;
+  font-weight: bold;
 }
 </style>

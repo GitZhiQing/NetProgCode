@@ -1,110 +1,201 @@
 <template>
   <v-app>
     <v-container>
-      <v-app-bar app color="primary" dark>
+      <v-app-bar app
+                 color="primary"
+                 dark>
         <v-toolbar-title>Seeker Engine - 后台任务</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn @click="goToHome">主页</v-btn>
       </v-app-bar>
       <v-main>
         <v-container>
-          <v-alert v-if="alert.show" :type="alert.type" dismissible @input="alert.show = false" class="mb-4">
+          <v-card class="mb-4"
+                  outlined>
+            <v-card-title>
+              <span class="headline">文档统计</span>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text>
+              <v-row>
+                <v-col cols="6"
+                       class="d-flex align-center justify-center">
+                  <v-icon color="primary"
+                          class="mr-2">mdi-file-document-outline</v-icon>
+                  <span>原始文档数量: <strong>{{ odocsCount }}</strong></span>
+                </v-col>
+                <v-col cols="6"
+                       class="d-flex align-center justify-center">
+                  <v-icon color="primary"
+                          class="mr-2">mdi-file-document-edit-outline</v-icon>
+                  <span>预处理文档数量: <strong>{{ pdocsCount }}</strong></span>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
+          <v-alert v-if="alert.show"
+                   :type="alert.type"
+                   dismissible
+                   @input="alert.show = false"
+                   class="mb-4">
             {{ alert.message }}
           </v-alert>
-          <v-sheet>
-            <v-form @submit.prevent="submitForm" class="mb-4">
-              <v-row>
+
+          <v-card class="mb-4"
+                  outlined>
+            <v-card-title>
+              <span class="headline">发布任务</span>
+            </v-card-title>
+
+            <v-divider class="my-4"></v-divider>
+            <v-sheet class="pa-4">
+              <v-form @submit.prevent="submitForm"
+                      class="mb-4">
+                <v-row>
+                  <v-col cols="12">
+                    <span class="headline">爬取指定数量篇最新文章</span>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-text-field v-model="targetId"
+                                  label="Target Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-text-field v-model="count"
+                                  label="Count"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-btn type="submit"
+                           color="primary"
+                           block
+                           small>提交</v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-sheet>
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-sheet class="pa-4">
+              <v-form @submit.prevent="submitCrawlOneId"
+                      class="mb-4">
+                <v-row>
+                  <v-col cols="12">
+                    <span class="headline">爬取指定 id 的文章</span>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-text-field v-model="articleId"
+                                  label="Article Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-text-field v-model="targetId"
+                                  label="Target Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-btn type="submit"
+                           color="primary"
+                           block
+                           small>提交</v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-sheet>
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-sheet class="pa-4">
+              <v-form @submit.prevent="submitCrawlRangeId"
+                      class="mb-4">
+                <v-row>
+                  <v-col cols="12">
+                    <span class="headline">爬取指定范围 id 的文章</span>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-text-field v-model="startId"
+                                  label="Start Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-text-field v-model="endId"
+                                  label="End Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-text-field v-model="targetId"
+                                  label="Target Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-btn type="submit"
+                           color="primary"
+                           block
+                           small>提交</v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-sheet>
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-sheet class="pa-4">
+              <v-form @submit.prevent="submitCrawlLatest100"
+                      class="mb-4">
+                <v-row>
+                  <v-col cols="12">
+                    <span class="headline">爬取最新 100 篇文章</span>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field v-model="targetId"
+                                  label="Target Id"
+                                  type="number"
+                                  dense
+                                  required></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-btn type="submit"
+                           color="primary"
+                           block
+                           small>提交</v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-sheet>
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-sheet class="pa-4">
+              <v-row class="mb-4">
                 <v-col cols="12">
-                  <span class="headline">爬取指定数量篇最新文章</span>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field v-model="targetId" label="Target Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field v-model="count" label="Count" type="number" dense required></v-text-field>
+                  <span class="headline">预处理所有文档</span>
                 </v-col>
                 <v-col cols="12">
-                  <v-btn type="submit" color="primary" block small>提交</v-btn>
+                  <v-btn @click="submitPreprocessAll"
+                         color="primary"
+                         block
+                         small>提交</v-btn>
                 </v-col>
               </v-row>
-            </v-form>
-          </v-sheet>
+            </v-sheet>
 
-          <v-divider class="my-4"></v-divider>
-
-          <v-sheet>
-            <v-form @submit.prevent="submitCrawlOneId" class="mb-4">
-              <v-row>
-                <v-col cols="12">
-                  <span class="headline">爬取指定 id 的文章</span>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field v-model="articleId" label="Article Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="6">
-                  <v-text-field v-model="targetId" label="Target Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-btn type="submit" color="primary" block small>提交</v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-sheet>
-
-          <v-divider class="my-4"></v-divider>
-
-          <v-sheet>
-            <v-form @submit.prevent="submitCrawlRangeId" class="mb-4">
-              <v-row>
-                <v-col cols="12">
-                  <span class="headline">爬取指定范围 id 的文章</span>
-                </v-col>
-                <v-col cols="4">
-                  <v-text-field v-model="startId" label="Start Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="4">
-                  <v-text-field v-model="endId" label="End Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="4">
-                  <v-text-field v-model="targetId" label="Target Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-btn type="submit" color="primary" block small>提交</v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-sheet>
-
-          <v-divider class="my-4"></v-divider>
-
-          <v-sheet>
-            <v-form @submit.prevent="submitCrawlLatest100" class="mb-4">
-              <v-row>
-                <v-col cols="12">
-                  <span class="headline">爬取最新 100 篇文章</span>
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field v-model="targetId" label="Target Id" type="number" dense required></v-text-field>
-                </v-col>
-                <v-col cols="12">
-                  <v-btn type="submit" color="primary" block small>提交</v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-sheet>
-
-          <v-divider class="my-4"></v-divider>
-
-          <v-sheet>
-            <v-row class="mb-4">
-              <v-col cols="12">
-                <span class="headline">预处理所有文档</span>
-              </v-col>
-              <v-col cols="12">
-                <v-btn @click="submitPreprocessAll" color="primary" block small>提交</v-btn>
-              </v-col>
-            </v-row>
-          </v-sheet>
+          </v-card>
         </v-container>
       </v-main>
     </v-container>
@@ -127,6 +218,8 @@ export default {
         type: "",
         message: "",
       },
+      odocsCount: 0,
+      pdocsCount: 0,
     };
   },
 
@@ -269,9 +362,25 @@ export default {
         };
       }
     },
+    async fetchDocCounts() {
+      try {
+        const odocsResponse = await apiClient.get(`/api/docs/odocs/count`);
+        const pdocsResponse = await apiClient.get(`/api/docs/pdocs/count`);
+
+        this.odocsCount = odocsResponse.data.count;
+        this.pdocsCount = pdocsResponse.data.count;
+        console.log("Fetched document counts:", this.odocsCount, this.pdocsCount);
+      } catch (error) {
+        console.error("Error fetching document counts:", error);
+      }
+    },
     goToHome() {
       this.$router.push({ name: "Home" });
     },
+  },
+
+  async mounted() {
+    await this.fetchDocCounts();
   },
 };
 </script>

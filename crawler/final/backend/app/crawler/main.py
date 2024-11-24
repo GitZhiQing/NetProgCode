@@ -1,9 +1,8 @@
 import logging
-from typing import Optional
 
 import requests
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import TimeoutError
+from sqlalchemy.orm import Session
 
 from app import deps, settings
 from app.crawler import get_soup, target_list, APP_UA
@@ -49,7 +48,7 @@ def crawl_one_id(article_id: int, target_id: int):
     site = target_list[target_id]["name"]
     first_100_words = get_first_100_words(soup, target_id)
     odoc = crud.create_odoc(db, url, title, site, first_100_words)
-    logging.info("Done.")
+    logging.info(f"文章 ID: {article_id} 在 {site} 爬取完成.")
     with open(f"{settings.ODOC_DIR}/{odoc.odid}.html", "w", encoding="utf-8") as file:
         file.write(resp.text)
 
@@ -70,7 +69,7 @@ def crawl_range_id(start_id: int, end_id: int, target_id: int):
             crawl_one_id(article_id, target_id)
         except TimeoutError as e:
             logging.error(f"数据库连接超时: {e}")
-    logging.info("Done.")
+    logging.info(f"文章范围 ID {start_id} - {end_id} 在 {target_list[target_id]['name']} 爬取完成.")
 
 
 def crawl_range_count(count: int = 100, target_id: int = 0):
@@ -81,4 +80,4 @@ def crawl_range_count(count: int = 100, target_id: int = 0):
     latest_article_id = get_latest_article_id(target_id)
     start_id = latest_article_id - count + 1
     crawl_range_id(start_id, latest_article_id, target_id)
-    logging.info("Done.")
+    logging.info(f"最新 {count} 篇文章在 {target_list[target_id]['name']} 爬取完成.")

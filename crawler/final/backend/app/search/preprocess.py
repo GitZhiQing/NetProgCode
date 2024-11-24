@@ -4,6 +4,7 @@ import os
 import re
 
 import jieba
+import joblib
 from bs4 import BeautifulSoup
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -18,7 +19,7 @@ setup_logging()
 CHINESE_PATTERN = re.compile(r"[\u4e00-\u9fa5]+")
 ENGLISH_PATTERN = re.compile(r"[a-zA-Z]+")
 NON_CHINESE_ENGLISH_PATTERN = re.compile(r"[^\u4e00-\u9fa5a-zA-Z\s]")
-URL_PATTERN = re.compile(r"http[s]?://\S+")
+URL_PATTERN = re.compile(r"https?://\S+")
 
 # 加载停用词
 STOPWORDS_PATH = os.path.join(settings.DATA_DIR, "stopwords.txt")
@@ -26,6 +27,8 @@ STOPWORDS = set()
 if os.path.exists(STOPWORDS_PATH):
     with open(STOPWORDS_PATH, "r", encoding="utf-8") as file:
         STOPWORDS = set(file.read().splitlines())
+else:
+    logging.warning(f"Stopwords file not found at {STOPWORDS_PATH}")
 
 
 def tokenize_text(text):
@@ -34,6 +37,8 @@ def tokenize_text(text):
     """
     # 移除HTML标签
     text = BeautifulSoup(text, "html.parser").get_text().lower()
+    # 移除URL
+    text = URL_PATTERN.sub("", text)
     # 移除非中文和非英文字符
     text = NON_CHINESE_ENGLISH_PATTERN.sub("", text)
 
@@ -57,18 +62,24 @@ def tokenize_text(text):
 
 def preprocess_all_odocs():
     """
-    预处理所有未处理的原始文档
+    预处理所有未处理的原始文档，并重新构建倒排索引和 TF-IDF 矩阵
     """
     db: Session = next(deps.get_db())
     odocs = crud.get_unprocessed_odocs(db)
     logging.info(f"开始预处理共 {len(odocs)} 篇原始文档.")
+    documents = []
+    odoc_ids = []
     for odoc in odocs:
         pdoc = crud.create_pdoc(db, odoc.odid)
         pdoc_content = tokenize_text(utils.read_odoc_content(odoc))
         with open(f"{settings.PDOC_DIR}/{pdoc.pdid}.txt", "w", encoding="utf-8") as f:
             f.write(pdoc_content)
         odoc.is_preprocessed = 1
+        documents.append(pdoc_content)
+        odoc_ids.append(odoc.odid)
     db.commit()
+    # 重新构建倒排索引和 TF-IDF 矩阵
+    build_tfidf_matrix()
     logging.info("Done.")
     return len(odocs)
 
@@ -84,7 +95,10 @@ def build_inverted_index(documents):
             if word not in inverted_index:
                 inverted_index[word] = set()
             inverted_index[word].add(doc_id)
-    return inverted_index
+    with open(settings.INVERTED_INDEX_PATH, "w", encoding="utf-8") as f:
+        json.dump(
+            {k: list(v) for k, v in inverted_index.items()}, f, ensure_ascii=False
+        )
 
 
 def build_tfidf_matrix():
@@ -99,12 +113,8 @@ def build_tfidf_matrix():
     tfidf_matrix = vectorizer.fit_transform(documents)
 
     # 构建倒排索引
-    inverted_index = build_inverted_index(documents)
+    build_inverted_index(documents)
 
-    # 保存倒排索引
-    with open(settings.INVERTED_INDEX_PATH, "w", encoding="utf-8") as f:
-        json.dump(
-            {k: list(v) for k, v in inverted_index.items()}, f, ensure_ascii=False
-        )
-
-    return tfidf_matrix, vectorizer
+    # 保存 TF-IDF 矩阵和 vectorizer
+    joblib.dump(tfidf_matrix, settings.TFIDF_MATRIX_PATH)
+    joblib.dump(vectorizer, settings.VECTORIZER_PATH)
