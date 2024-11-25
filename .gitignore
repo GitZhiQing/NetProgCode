@@ -12,10 +12,12 @@
 !headers.json
 *.jpg
 *.log
+data/
 
 # python
 __pycache__/
 
 # dev
 tmp/
+test/
 dev-docs
