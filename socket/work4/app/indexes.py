@@ -47,8 +47,7 @@ def get_index_html(dir_path):
 
     rows = ""
     # 添加返回上一级目录的链接
-    parent_dir = os.path.dirname(dir_path.rstrip("/"))
-    rows += f"<tr><td><a href='../'>../</a></td><td> - </td><td></td></tr>"
+    rows += "<tr><td><a href='../'>../</a></td><td> - </td><td></td></tr>"
 
     for file_name, file_info in dir_list:
         if file_info == "dir":
