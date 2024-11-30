@@ -1,20 +1,35 @@
+import os
 import my_requests
-import json as json_lib
 
 
-url = "https://example.com/"
+targets = [
+    "https://www.google.com/",
+    "https://www.bing.com/",
+    "https://www.baidu.com/",
+]
 
-response = my_requests.get(url)
-print(response.url)
-print(response.status_code)
-print(response.reason)
-print(response.headers)
-print(response.apparent_encoding)
-print(response.encoding)
-print(response.content)
-print(response.text)
-try:
-    json_data = response.json()
-    print(json_data)
-except json_lib.JSONDecodeError:
-    print("响应内容不是有效的 JSON 数据")
+proxies = {
+    "http": "http://127.0.0.1:7890",
+    "https": "http://127.0.0.1:7890",
+}
+
+
+for target in targets:
+    my_resp = my_requests.get(target, proxies=proxies)
+    if my_resp.status_code == 200:
+        print(f"成功访问 {target}")
+        if not my_resp.encoding:
+            my_resp.encoding = my_resp.apparent_encoding
+        file_name = target.split("www.")[1].split(".com")[0] + ".html"
+        # 确认 data 目录存在
+        if not os.path.exists("./data"):
+            os.makedirs("./data")
+        file_path = f"./data/{file_name}"
+        with open(file_path, "w", encoding=my_resp.encoding) as f:
+            f.write(my_resp.text)
+    else:
+        print(f"访问 {target} 失败")
+        print(f"状态码: {my_resp.status_code}")
+        print(f"原因: {my_resp.reason}")
+        print(f"响应头: {my_resp.headers}")
+        print(f"响应体: {my_resp.content}")

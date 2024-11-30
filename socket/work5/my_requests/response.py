@@ -14,15 +14,16 @@ class Response:
         )  # 从响应头中提取的编码，可由用户指定，将被用于 text 属性的解码
 
     def _get_encoding_from_headers(self):
-        content_type = self.headers.get("Content-Type")
-        if content_type:
-            for part in content_type.split(";"):
-                if "charset=" in part:
-                    return part.split("=")[1].strip()
+        content_type = self.headers.get("Content-Type", "")
+        if "charset=" in content_type:
+            return content_type.split("charset=")[1]
         return None
 
     @property
     def apparent_encoding(self):
+        """
+        返回响应体的编码，由 chardet 模块检测得到
+        """
         return chardet.detect(self._content)["encoding"]
 
     @property
