@@ -36,7 +36,9 @@ class Aptche:
                 content = f.read()
             return Response(
                 content,
-                headers=[("Content-Type", utils.get_content_type_by_file_path(file_path))],
+                headers=[
+                    ("Content-Type", utils.get_content_type_by_file_path(file_path))
+                ],
             )
         return Response("File Not Found", status="404 Not Found")
 

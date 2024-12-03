@@ -1,4 +1,7 @@
-import html, json, os, re, sys, time
+import html
+import json
+import os
+import re
 
 from bs4 import BeautifulSoup
 import requests

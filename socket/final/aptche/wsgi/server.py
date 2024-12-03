@@ -37,7 +37,8 @@ class AptcheServer:
                 f"{environ.get('REMOTE_ADDR')} - - [{environ.get('REQUEST_DATE')}] "
                 f'"{environ.get("REQUEST_METHOD")} {environ.get("PATH_INFO")} '
                 f'{environ.get("SERVER_PROTOCOL")}" {environ.get("STATUS_CODE")} '
-                f'{environ.get("CONTENT_LENGTH") or "-"}')
+                f'{environ.get("CONTENT_LENGTH") or "-"}'
+            )
         except Exception as e:
             logging.error(f"处理请求失败: {e}")
         finally:
@@ -70,6 +71,7 @@ class AptcheServer:
         result = self.app(environ, start_response)
         response_body = b"".join(result)
         writer = BytesIO()
+        # 将响应头和响应体写入缓冲区
         write(response_body)
         return writer.getvalue()
 

@@ -1,5 +1,6 @@
 from .response import Response
 
+
 class Router:
     def __init__(self, app):
         self.routes = {}
@@ -25,5 +26,5 @@ class Router:
             else:
                 return Response("Method Not Allowed", status="405 Method Not Allowed")
         elif request.path.startswith("/static/"):
-            return self.app.send_static_file(request.path[len("/static/"):])
+            return self.app.send_static_file(request.path[len("/static/") :])
         return Response("Not Found", status="404 Not Found")

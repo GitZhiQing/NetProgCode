@@ -36,7 +36,7 @@ def init_search_index():
     # 检查是否未爬取文档
     odocs = crud.get_all_odocs(db)
     if not odocs:
-        logging.info(f"未找到任何原始文档...")
+        logging.info("未找到任何原始文档...")
         default_crawl_target_id = 0
         default_crawl_count = 10
         from app import crawler

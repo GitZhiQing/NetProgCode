@@ -9,7 +9,9 @@ logging.basicConfig(
 logging.getLogger("asyncio").setLevel(logging.CRITICAL)
 logging.getLogger("ssl").setLevel(logging.CRITICAL)
 
-CERTS_DIR_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "certs")
+CERTS_DIR_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "certs"
+)
 
 settings = {
     "APP_NAME": "Aptche HTTP Server",

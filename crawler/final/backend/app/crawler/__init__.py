@@ -30,10 +30,18 @@ def get_soup(url, headers=None) -> BeautifulSoup or None:
         return None
 
 
-from app.crawler.main import (
+from app.crawler.main import (  # noqa: E402
     crawl_one_id,
     crawl_range_id,
     crawl_range_count,
     get_first_100_words,
     get_latest_article_id,
-)  # noqa
+)
+
+__all__ = [
+    "crawl_one_id",
+    "crawl_range_id",
+    "crawl_range_count",
+    "get_first_100_words",
+    "get_latest_article_id",
+]

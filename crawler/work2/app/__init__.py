@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, render_template
 from . import crawler
 
 app = Flask(__name__)

@@ -1,5 +1,6 @@
 from .utils import get_content_type_by_content, get_gmt_date
 
+
 class Response:
     def __init__(self, body, status="200 OK", headers=None):
         self.body = body

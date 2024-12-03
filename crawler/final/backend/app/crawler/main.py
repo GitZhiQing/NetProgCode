@@ -69,7 +69,9 @@ def crawl_range_id(start_id: int, end_id: int, target_id: int):
             crawl_one_id(article_id, target_id)
         except TimeoutError as e:
             logging.error(f"数据库连接超时: {e}")
-    logging.info(f"文章范围 ID {start_id} - {end_id} 在 {target_list[target_id]['name']} 爬取完成.")
+    logging.info(
+        f"文章范围 ID {start_id} - {end_id} 在 {target_list[target_id]['name']} 爬取完成."
+    )
 
 
 def crawl_range_count(count: int = 100, target_id: int = 0):

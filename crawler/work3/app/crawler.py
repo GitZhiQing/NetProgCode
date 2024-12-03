@@ -2,7 +2,6 @@ import json
 import os
 import re
 import time
-import urllib3
 import warnings
 
 import requests
@@ -106,7 +105,7 @@ def main(url="https://sqlmap.highlight.ink/"):
         return
 
     with Progress() as progress:
-        p, total = 0, len(suburls)
+        total = len(suburls)
         description = f"[green]正在处理原始链接 ({url}) "
         task_id = progress.add_task(description.format(), total=total)
         data = {
