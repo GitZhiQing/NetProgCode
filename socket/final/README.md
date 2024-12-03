@@ -26,98 +26,32 @@ WSGI 服务器和 Web 框架相互配合实现了一个简单的 HTTP 服务器�
 
 WSGI 服务器和 Web 框架作为 Aptche 的两个模块（`aptche.server` 和 `aptche.web`），分别实现了 WSGI 服务器和 Web 框架的功能。
 
+其中，
 ---
 
 预期 demo:
 
 ```python
-from aptche.server import AptcheServer
-from aptche.web import Aptche
+from aptche.web import Aptche, render_template
 
 app = Aptche()
 
-@app.route('/')
-def index():
-    return 'Hello, Aptche!'
 
-@app.route('/hello/<name>')
+@app.route("/<name>")
+def index(name):
+    if name:
+        return render_template("index.html", name=name, app="Aptche")
+
+
+@app.route("/hello/<name>")
 def hello(name):
-    return f'Hello, {name}!'
+    return f"Hello, {name}!"
 
-server = AptcheServer(app)
-server.run(host='0.0.0.0', port=8080)
+
+if __name__ == "__main__":
+    app.run()
 ```
 
 ---
 
-AptcheServer 和 Aptche 的大致实现：
 
-```python
-# aptche/server.py
-import socket
-from aptche.web import Aptche
-
-class AptcheServer:
-    def __init__(self, app: Aptche):
-        self.app = app
-
-    def start_response(self, status: str, headers: list):
-        self.status = status
-        self.headers = headers
-        status_line = f'HTTP/1.1 {status}\r\n'
-        header_lines = [f'{key}: {value}\r\n' for key, value in headers]
-        self.response = status_line + ''.join(header_lines) + '\r\n'
-
-    def run(self, host: str, port: int):
-        # 启动 WSGI 服务器
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((host, port))
-        server_socket.listen(128)
-        while True:
-            client_socket, client_address = server_socket.accept()
-            request = client_socket.recv(1024).decode('utf-8')
-            environ = {
-                'REQUEST_METHOD': request.split(' ')[0],
-                'PATH_INFO': request.split(' ')[1],
-                'SERVER_PROTOCOL': request.split(' ')[2],
-                'wsgi.version': (1, 0),
-                'wsgi.url_scheme': 'http',
-                'wsgi.input': request,
-                'wsgi.errors': None,
-                'wsgi.multithread': False,
-                'wsgi.multiprocess': False,
-                'wsgi.run_once': False,
-                'SERVER_NAME': host,
-                'SERVER_PORT': str(port),
-                'REMOTE_ADDR': client_address[0],
-                'REMOTE_PORT': str(client_address[1]),
-                'SCRIPT_NAME': ''
-            }
-            content = self.app(environ, self.start_response)
-            client_socket.sendall(self.response.encode('utf-8') + content.encode('utf-8'))
-            client_socket.close()
-```
-
-```python
-# aptche/web.py
-
-class Aptche:
-    def __init__(self):
-        self.routes = {}
-
-    def route(self, path: str):
-        def decorator(func):
-            self.routes[path] = func
-            return func
-        return decorator
-
-    def __call__(self, environ, start_response):
-        path = environ['PATH_INFO']
-        func = self.routes.get(path)
-        if func is None:
-            start_response('404 Not Found', [('Content-Type', 'text/plain')])
-            return [b'404 Not Found']
-        content = func()
-        start_response('200 OK', [('Content-Type', 'text/plain')])
-        return [content.encode('utf-8')]
-```

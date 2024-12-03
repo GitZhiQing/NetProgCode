@@ -1,19 +1,25 @@
-from aptche.server import AptcheServer
-from aptche.web import Aptche, render_template
+import asyncio
+import logging
 
-app = Aptche()
+from flask import Flask
 
+from aptche.wsgi.server import AptcheServer
 
-@app.route("/<name>")
-def index(name):
-    if name:
-        return render_template("index.html", name=name, app="Aptche")
+app = Flask(__name__)
 
 
-@app.route("/hello/<name>")
-def hello(name):
-    return f"Hello, {name}!"
+@app.route("/")
+def hello():
+    return "Hello, World!"
 
 
-server = AptcheServer(app)
-server.run(host="0.0.0.0", port=8888)
+async def main():
+    server = AptcheServer(app)
+    await server.run()
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("服务器被用户终止")

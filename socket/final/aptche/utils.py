@@ -1,7 +1,7 @@
 import datetime
 import mimetypes
 
-import magic  #  python-magic-bin
+import magic  # python-magic-bin
 
 
 def get_content_type_by_file_path(file_path):
