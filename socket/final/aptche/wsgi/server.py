@@ -32,6 +32,12 @@ class AptcheServer:
             response = self.get_response(environ)
             writer.write(response)
             await writer.drain()
+            # apache 风格日志
+            logging.info(
+                f"{environ.get('REMOTE_ADDR')} - - [{environ.get('REQUEST_DATE')}] "
+                f'"{environ.get("REQUEST_METHOD")} {environ.get("PATH_INFO")} '
+                f'{environ.get("SERVER_PROTOCOL")}" {environ.get("STATUS_CODE")} '
+                f'{environ.get("CONTENT_LENGTH") or "-"}')
         except Exception as e:
             logging.error(f"处理请求失败: {e}")
         finally:

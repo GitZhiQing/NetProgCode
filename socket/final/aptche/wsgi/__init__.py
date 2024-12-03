@@ -22,3 +22,7 @@ settings = {
     "CERT_PATH": os.path.join(CERTS_DIR_PATH, "www.aptche.com+4.pem"),
     "KEY_PATH": os.path.join(CERTS_DIR_PATH, "www.aptche.com+4-key.pem"),
 }
+
+from aptche.wsgi.server import AptcheServer  # noqa
+
+__all__ = ["AptcheServer", settings]

@@ -13,6 +13,7 @@
 *.jpg
 *.log
 data/
+*.pem
 
 # python
 __pycache__/

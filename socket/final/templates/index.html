@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>待办事项</title>
+    <link rel="stylesheet" href="./static/style.css" />
+    <link rel="shortcut icon" href="./static/todo.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <img src="./static/todo.png" alt="todo" />
+        <h1>待办事项</h1>
+      </header>
+      <form action="/add" method="post">
+        <input type="text" name="title" placeholder="添加待办" />
+        <button type="submit">添加</button>
+      </form>
+      <section>
+        <h2>未完成</h2>
+        <ul>
+          {% for todo in todos %} {% if not todo.completed %}
+          <li>
+            <form action="/toggle" method="post" style="display: inline">
+              <input
+                type="hidden"
+                name="id"
+                value="{{ todo.id }}"
+                style="display: none" />
+              <input type="checkbox" onchange="this.form.submit()" />
+            </form>
+            <span class="todo-title">{{ todo.title }}</span>
+            <form
+              action="/delete"
+              method="post"
+              class="todo-actions"
+              style="display: inline">
+              <input
+                type="hidden"
+                name="id"
+                value="{{ todo.id }}"
+                style="display: none" />
+              <button type="submit" class="delete">删除</button>
+            </form>
+          </li>
+          {% endif %} {% endfor %}
+        </ul>
+      </section>
+      <section>
+        <h2>已完成</h2>
+        <ul>
+          {% for todo in todos %} {% if todo.completed %}
+          <li class="completed">
+            <form action="/toggle" method="post">
+              <input type="hidden" name="id" value="{{ todo.id }}" />
+              <input type="checkbox" checked onchange="this.form.submit()" />
+            </form>
+            <span class="todo-title">{{ todo.title }}</span>
+            <form action="/delete" method="post" class="todo-actions">
+              <input type="hidden" name="id" value="{{ todo.id }}" />
+              <button type="submit" class="delete">删除</button>
+            </form>
+          </li>
+          {% endif %} {% endfor %}
+        </ul>
+      </section>
+    </div>
+  </body>
+</html>

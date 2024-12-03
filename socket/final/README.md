@@ -20,38 +20,11 @@
 
 项目名称：Aptche
 
-开发思路：参考 WSGI 规范，实现一个 WSGI 服务器，同时参考 Flask 语法，实现一个简单的 Web 框架。
+开发思路：
 
-WSGI 服务器和 Web 框架相互配合实现了一个简单的 HTTP 服务器，支持路由、模板渲染等功能。
+- 参考 WSGI 规范，实现一个 WSGI 服务器（Aptche HTTP Server）。
+- 参考 Flask 语法，实现一个简单的 Web 框架（Aptche Web Framework）。
 
-WSGI 服务器和 Web 框架作为 Aptche 的两个模块（`aptche.server` 和 `aptche.web`），分别实现了 WSGI 服务器和 Web 框架的功能。
+再基于 Aptche Web 框架，实现一个简单的 TODO List。
 
-其中，
----
-
-预期 demo:
-
-```python
-from aptche.web import Aptche, render_template
-
-app = Aptche()
-
-
-@app.route("/<name>")
-def index(name):
-    if name:
-        return render_template("index.html", name=name, app="Aptche")
-
-
-@app.route("/hello/<name>")
-def hello(name):
-    return f"Hello, {name}!"
-
-
-if __name__ == "__main__":
-    app.run()
-```
-
----
-
-
+![demo.png](imgs/demo.png)
