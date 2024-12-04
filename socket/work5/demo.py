@@ -1,11 +1,12 @@
 import os
 import my_requests
+import time
 
 
 targets = [
-    "https://www.google.com/",
     "https://www.bing.com/",
     "https://www.baidu.com/",
+    "https://www.google.com/",
 ]
 
 proxies = {
@@ -15,12 +16,14 @@ proxies = {
 
 
 for target in targets:
-    my_resp = my_requests.get(target, proxies=proxies)
+    my_resp = my_requests.get(
+        target, proxies=proxies, headers={"User-Agent": "Mozilla/5.0"}
+    )
     if my_resp.status_code == 200:
         print(f"成功访问 {target}")
         if not my_resp.encoding:
             my_resp.encoding = my_resp.apparent_encoding
-        file_name = target.split("www.")[1].split(".com")[0] + ".html"
+        file_name = target.split(".")[1].split(".")[0] + ".html"
         # 确认 data 目录存在
         if not os.path.exists("./data"):
             os.makedirs("./data")
@@ -33,3 +36,4 @@ for target in targets:
         print(f"原因: {my_resp.reason}")
         print(f"响应头: {my_resp.headers}")
         print(f"响应体: {my_resp.content}")
+    time.sleep(0.2)

@@ -40,3 +40,7 @@
    - 倒排索引：根据分词结果构建倒排索引，存储到 json 文件。同时构建文档集合的 TF-IDF 矩阵 & `TfidfVectorizer` 对象，存储到 joblib 文件。
 
 3. **查询处理**：获取搜索词 -> 分词 -> 倒排索引查询相关文档 -> TF-IDF 向量化 -> 余弦相似度计算 -> 返回根据相似度排序的结果。
+
+## 项目答辩
+
+[演示](./DEFENSE/Seeker%20Engine.pdf) [文稿](./DEFENSE/SCRIPT.md)

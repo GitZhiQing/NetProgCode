@@ -22,3 +22,6 @@ __pycache__/
 tmp/
 test/
 dev-docs/
+
+# cache
+*cache*/
